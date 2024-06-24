@@ -1,14 +1,119 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const ToDoList = () => {
   const [inputValue, setInputValue] = useState("");
   const [toDo, setToDo] = useState([]);
 
-  const addTask = () => {
-    if (inputValue.trim() !== "") {
-      setToDo([...toDo, inputValue]);
-      setInputValue("");
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetch("https://playground.4geeks.com/todo/users/adilson353");
+        if (response.status === 404) {
+          console.log("Usuario no existe, hay que crearlo");
+          await createUser();
+        }
+        await getTasks();
+      } catch (error) {
+        console.error("Error:", error);
+      }
+    })();
+  }, []);
+
+  async function createUser() {
+    try {
+      const response = await fetch("https://playground.4geeks.com/todo/users/adilson353", {
+        method: "POST",
+        headers: {
+          accept: "application/json",
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify({
+          name: "adilson353",
+        }),
+      });
+      if (response.status !== 201) {
+        console.error("Error:", response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error("Error:", error);
     }
+  }
+
+  const getTasks = async () => {
+    
+    const response = await fetch("https://playground.4geeks.com/todo/users/adilson353");
+    const data = await response.json();
+    setToDo(data.todos || []); 
+  };
+  
+
+  const addTask = async (e) => {
+    try {
+      
+    
+      
+    
+    if (e.key === "Enter" && inputValue.trim() !== "") {
+      const response = await fetch(
+        "https://playground.4geeks.com/todo/todos/adilson353",
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            label: inputValue,
+            done: false,
+          }),
+        }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        setInputValue("");
+        getTasks();
+      }
+      
+    }
+  } catch (error) {
+    console.log("algo salio mal")
+      }
+  };
+
+  const deleteOne = async (id) => {
+    // Imprimir el ID para depuración
+    console.log(`Attempting to delete task with id: ${id}`);
+    const response = await fetch(`https://playground.4geeks.com/todo/todos/${id}`, {
+      method: "DELETE",
+    });
+
+    // Manejar la respuesta del servidor
+    if (response.ok) {
+      console.log("Task deleted successfully");
+      getTasks(); // Actualizar la lista de tareas después de la eliminación
+    } else {
+      console.log("Error:", response.status, response.statusText);
+    }
+  };
+
+  const deleteAll = async () => {
+    // Crear una lista de promesas para eliminar todas las tareas
+    const promises = toDo.map((item) => {
+      return fetch(`https://playground.4geeks.com/todo/todos/${item.id}`, {
+        method: "DELETE",
+      });
+    });
+
+    // Esperar a que todas las promesas se resuelvan
+    const responses = await Promise.all(promises);
+    responses.forEach((response, index) => {
+      if (!response.ok) {
+        console.log(`Error deleting task ${toDo[index].id}:`, response.status, response.statusText);
+      }
+    });
+
+    // Obtener las tareas actualizadas después de eliminar todas
+    getTasks();
   };
 
   return (
@@ -22,13 +127,9 @@ const ToDoList = () => {
               placeholder="Add Task"
               onChange={(e) => setInputValue(e.target.value)}
               value={inputValue}
-              onKeyPress={(e) => {
-                if (e.key === "Enter") {
-                  addTask();
-                }
-              }}
+              onKeyDown={addTask}
             />
-            <button className="button" onClick={addTask}>
+            <button className="button1" onClick={() => addTask({ key: "Enter" })}>
               Add
             </button>
           </div>
@@ -38,17 +139,22 @@ const ToDoList = () => {
         ) : (
           toDo.map((item, index) => (
             <li key={index} className="task-item">
-              <span>{item}</span>
+              <span>{item.label}</span>
               <i
-                className="fas fa-trash-alt"
-                onClick={() => setToDo(toDo.filter((_, currentIndex) => index !== currentIndex))}
+                className="fas fa-trash-alt icono"
+                onClick={() => deleteOne(item.id)}
               ></i>
             </li>
           ))
         )}
       </ul>
       <div className="task-counter">
-        <p> <strong>Total tasks</strong>: {toDo.length}</p>
+        <p><strong>Total tasks</strong>: {toDo.length}</p>
+      </div>
+      <div className="button">
+        <button onClick={deleteAll} className="btn btn-outline-danger" type="button">
+          Delete All
+        </button>
       </div>
     </div>
   );
