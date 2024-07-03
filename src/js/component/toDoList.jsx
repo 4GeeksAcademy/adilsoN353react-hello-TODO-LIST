@@ -14,7 +14,7 @@ const ToDoList = () => {
         }
         await getTasks();
       } catch (error) {
-        console.error("Error:", error);
+       
       }
     })();
   }, []);
@@ -32,10 +32,10 @@ const ToDoList = () => {
         }),
       });
       if (response.status !== 201) {
-        console.error("Error:", response.status, response.statusText);
+        
       }
     } catch (error) {
-      console.error("Error:", error);
+    
     }
   }
 
@@ -49,11 +49,7 @@ const ToDoList = () => {
 
   const addTask = async (e) => {
     try {
-      
-    
-      
-    
-    if (e.key === "Enter" && inputValue.trim() !== "") {
+      if (e.key === "Enter" && inputValue.trim() !== "") {
       const response = await fetch(
         "https://playground.4geeks.com/todo/todos/adilson353",
         {
@@ -76,24 +72,21 @@ const ToDoList = () => {
       
     }
   } catch (error) {
-    console.log("algo salio mal")
+  
       }
   };
 
   const deleteOne = async (id) => {
-    // Imprimir el ID para depuración
-    console.log(`Attempting to delete task with id: ${id}`);
+ 
     const response = await fetch(`https://playground.4geeks.com/todo/todos/${id}`, {
       method: "DELETE",
     });
 
     // Manejar la respuesta del servidor
     if (response.ok) {
-      console.log("Task deleted successfully");
+      
       getTasks(); // Actualizar la lista de tareas después de la eliminación
-    } else {
-      console.log("Error:", response.status, response.statusText);
-    }
+    } 
   };
 
   const deleteAll = async () => {
@@ -108,7 +101,7 @@ const ToDoList = () => {
     const responses = await Promise.all(promises);
     responses.forEach((response, index) => {
       if (!response.ok) {
-        console.log(`Error deleting task ${toDo[index].id}:`, response.status, response.statusText);
+       
       }
     });
 
